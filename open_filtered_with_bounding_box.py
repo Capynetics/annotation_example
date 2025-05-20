@@ -115,4 +115,4 @@ def vis_dict(directory):
     vis.run()
 
 if __name__ == '__main__':
-    vis_dict('/home/user/annotated/6_annotated/scene_6/pointcloud')  # Adjust path accordingly
+    vis_dict('2_annotated/scene_2/pointcloud')  # Adjust path accordingly
