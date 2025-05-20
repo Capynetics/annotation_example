@@ -1,0 +1,293 @@
+{
+  "description": "",
+  "key": "5deb4f92-7acb-4c69-bace-85b07f68570b",
+  "tags": [
+    {
+      "key": "a5f17378-82b7-4883-ad91-024ab817ae95",
+      "name": "name",
+      "value": "django",
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "ccdbcc7a-a9d2-41c7-b90f-4be8052174e7",
+      "name": "labels",
+      "value": [
+        {
+          "label_id": 0,
+          "name": "Person",
+          "color": "#c06060",
+          "type": "any"
+        }
+      ],
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    }
+  ],
+  "objects": [
+    {
+      "key": "eae3aeaa-827b-45f6-b516-55669fe29155",
+      "classTitle": "Person",
+      "tags": [
+        {
+          "key": "873c0d30-ea75-44a8-9717-0724898d924b",
+          "name": "occluded",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        },
+        {
+          "key": "c4d49277-2f03-4ea9-b16d-11ac25ec943d",
+          "name": "keyframe",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        }
+      ],
+      "objects": [],
+      "figures": [],
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "258ae626-9ff2-490b-9512-73ed8db9c3a4",
+      "classTitle": "Person",
+      "tags": [
+        {
+          "key": "21ac01ad-9ec6-4ed5-bcaa-b74d8b3bb692",
+          "name": "occluded",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        },
+        {
+          "key": "91a81458-3aad-4f8f-a0c7-440d0ddbe97d",
+          "name": "keyframe",
+          "value": "true",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        }
+      ],
+      "objects": [],
+      "figures": [],
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "4c827af0-dc36-4f39-bbfa-a491ebc2e340",
+      "classTitle": "Person",
+      "tags": [
+        {
+          "key": "ec30a0b9-d172-44ef-b828-bff611475a7e",
+          "name": "occluded",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        },
+        {
+          "key": "68e494af-84a9-4336-b8ae-2e9490d32598",
+          "name": "keyframe",
+          "value": "true",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        }
+      ],
+      "objects": [],
+      "figures": [],
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "b0d41880-8ab8-414f-b0a1-38f92406753b",
+      "classTitle": "Person",
+      "tags": [
+        {
+          "key": "8df4529e-527c-495a-9d06-62c57d963bcf",
+          "name": "occluded",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        },
+        {
+          "key": "1721e987-118d-4ac1-8b61-2ac8d1ad8246",
+          "name": "keyframe",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        }
+      ],
+      "objects": [],
+      "figures": [],
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "96a62a12-bcae-4720-8133-fe7b43ae8139",
+      "classTitle": "Person",
+      "tags": [
+        {
+          "key": "6f0d17e5-1373-47a0-85e6-01e32cdbbfa6",
+          "name": "occluded",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        },
+        {
+          "key": "49851fe8-c1e0-4f05-89da-784fc121ec72",
+          "name": "keyframe",
+          "value": "false",
+          "labelerLogin": "",
+          "createdAt": "2025-02-17 15:53:35.891801+00:00",
+          "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+        }
+      ],
+      "objects": [],
+      "figures": [],
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    }
+  ],
+  "figures": [
+    {
+      "key": "37c1f967-fd07-43f0-8d90-c1193c56dd5c",
+      "objectKey": "eae3aeaa-827b-45f6-b516-55669fe29155",
+      "geometryType": "cuboid_3d",
+      "geometry": {
+        "position": {
+          "x": 10.53,
+          "y": -1.53,
+          "z": -1.36
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "dimensions": {
+          "x": 0.64,
+          "y": 0.75,
+          "z": 1.72
+        }
+      },
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "464dd33b-3d3c-462d-a89b-f1ab9200421c",
+      "objectKey": "258ae626-9ff2-490b-9512-73ed8db9c3a4",
+      "geometryType": "cuboid_3d",
+      "geometry": {
+        "position": {
+          "x": 10.67,
+          "y": 1.28,
+          "z": -1.29
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "dimensions": {
+          "x": 0.56,
+          "y": 0.75,
+          "z": 1.97
+        }
+      },
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "2b862458-0623-4bf7-af93-a816bca81216",
+      "objectKey": "4c827af0-dc36-4f39-bbfa-a491ebc2e340",
+      "geometryType": "cuboid_3d",
+      "geometry": {
+        "position": {
+          "x": 11.13,
+          "y": -0.22,
+          "z": -1.19
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "dimensions": {
+          "x": 0.56,
+          "y": 0.75,
+          "z": 1.97
+        }
+      },
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "1916fdb9-fb60-4a1e-ae6f-3fe3766f517e",
+      "objectKey": "b0d41880-8ab8-414f-b0a1-38f92406753b",
+      "geometryType": "cuboid_3d",
+      "geometry": {
+        "position": {
+          "x": 1.67,
+          "y": -1.14,
+          "z": -1.2
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "dimensions": {
+          "x": 0.56,
+          "y": 0.75,
+          "z": 1.97
+        }
+      },
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    },
+    {
+      "key": "de77cbd3-394a-4f68-9f71-b6489db8190a",
+      "objectKey": "96a62a12-bcae-4720-8133-fe7b43ae8139",
+      "geometryType": "cuboid_3d",
+      "geometry": {
+        "position": {
+          "x": 1.36,
+          "y": 0.31,
+          "z": -1.28
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "dimensions": {
+          "x": 0.56,
+          "y": 0.75,
+          "z": 1.97
+        }
+      },
+      "labelerLogin": "",
+      "createdAt": "2025-02-17 15:53:35.891801+00:00",
+      "updatedAt": "2025-02-20 21:15:58.287778+00:00"
+    }
+  ]
+}
