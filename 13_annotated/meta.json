@@ -1,0 +1,59 @@
+{
+  "classes": [
+    {
+      "id": 0,
+      "title": "Person",
+      "color": "",
+      "shape": "cuboid_3d",
+      "geometry_config": {}
+    }
+  ],
+  "tags": [
+    {
+      "name": "occluded",
+      "value_type": "any_string",
+      "color": "",
+      "id": 1,
+      "hotkey": "",
+      "applicable_type": "objectsOnly",
+      "classes": []
+    },
+    {
+      "name": "name",
+      "value_type": "any_string",
+      "color": "",
+      "id": 2,
+      "hotkey": "",
+      "applicable_type": "imagesOnly",
+      "classes": [],
+      "value": "django"
+    },
+    {
+      "name": "labels",
+      "value_type": "any_string",
+      "color": "",
+      "id": 3,
+      "hotkey": "",
+      "applicable_type": "imagesOnly",
+      "classes": [],
+      "value": [
+        {
+          "label_id": 0,
+          "name": "Person",
+          "color": "#c06060",
+          "type": "any"
+        }
+      ]
+    },
+    {
+      "name": "keyframe",
+      "value_type": "any_string",
+      "color": "",
+      "id": 4,
+      "hotkey": "",
+      "applicable_type": "objectsOnly",
+      "classes": []
+    }
+  ],
+  "projectType": "point_clouds"
+}
