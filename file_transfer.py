@@ -7,7 +7,7 @@ to_be_annotated_dir = "/home/jsouzasoar/Downloads/To_be_annotated"
 output_dir = "/home/jsouzasoar/annotation_example"
 
 # Loop from x = 3 onward
-for x in range(3, 53):
+for x in range(27, 28):
     print(f"\n=== Processing index {x} ===")
 
     # Step 1: Copy x_annotation → x_annotated
