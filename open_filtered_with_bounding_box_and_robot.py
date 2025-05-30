@@ -17,11 +17,11 @@ def vis_dict(directory):
     print(f"Found {len(pcds)} .pcd files with annotations")
 
     # Load robot pose CSV
-    pose_df = pd.read_csv('8_annotated/8_robot_pose.csv')
+    pose_df = pd.read_csv('39_annotated/39_robot_pose.csv')
     pose_times = pose_df['timestamp_ns'].values
 
     # Load spatial and yaw offset from JSON
-    with open('8_annotated/8_grs_to_bot_offset.json', 'r') as f:
+    with open('39_annotated/39_grs_to_bot_offset.json', 'r') as f:
         offset_data = json.load(f)
 
     POSE_OFFSET = np.array([
@@ -175,4 +175,4 @@ def vis_dict(directory):
     vis.run()
 
 if __name__ == '__main__':
-    vis_dict('8_annotated/scene_8/pointcloud')
+    vis_dict('39_annotated/scene_39/pointcloud')

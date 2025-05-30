@@ -44,7 +44,7 @@ with rosbag.Bag(bag_path, 'r') as bag:
 
         T_map_odom = transform_to_matrix(tf_map_odom)
         T_odom_base = transform_to_matrix(tf_odom_base)
-        T_map_base = T_odom_base
+        T_map_base = np.dot(T_map_odom, T_odom_base)
 
         x = T_map_base[0, 3]
         y = T_map_base[1, 3]
