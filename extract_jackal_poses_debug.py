@@ -7,7 +7,8 @@ import csv
 from tqdm import tqdm
 
 # List of HSR scene numbers
-hsr_scene_numbers = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 27, 28, 29, 30, 31, 32, 34, 35, 36, 38, 39]
+hsr_scene_numbers = [15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                     41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52]
 
 # Base directory where bag files are located
 base_path = "/media/jsouzasoar/EXTERNAL_USB"
@@ -41,11 +42,11 @@ for scene_num in tqdm(hsr_scene_numbers, desc="Processing HSR Scenes"):
                     key = (transform.header.frame_id, transform.child_frame_id)
                     tf_data.setdefault(key, []).append(transform)
 
-        if ('odom', 'base_footprint') not in tf_data or ('map', 'odom') not in tf_data:
+        if ('odom', 'base_link') not in tf_data or ('map', 'odom') not in tf_data:
             print("Missing required TF frames. Skipping this scene.")
             continue
 
-        for tf_odom_base in tf_data.get(('odom', 'base_footprint'), []):
+        for tf_odom_base in tf_data.get(('odom', 'base_link'), []):
             stamp = tf_odom_base.header.stamp
             stamp_ns = stamp.secs * 1_000_000_000 + stamp.nsecs
 
