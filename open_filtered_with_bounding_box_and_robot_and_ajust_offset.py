@@ -6,14 +6,13 @@ import os
 import pandas as pd
 import bisect
 
-
-scene_number = 52  # Change this to the desired scene number
+scene_number = 46  # Change this to the desired scene number
 
 hsr_scene_numbers = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 27, 28, 29, 30, 31, 32, 34, 35, 36, 38, 39]
 TIME_OFFSET_NS = 0
 
 # Adjust time offset for specific scenes
-if scene_number in hsr_scene_numbers or scene_number in [46, 52]:
+if scene_number in hsr_scene_numbers or scene_number == 46:
     TIME_OFFSET_NS = 15_500_000_000
 
 def vis_dict(directory):
@@ -39,11 +38,14 @@ def vis_dict(directory):
         offset_data.get('y', 0.0),
         offset_data.get('z', 0.0)
     ])
-    YAW_OFFSET_RAD = np.radians(offset_data.get('yaw_deg', 0.0))
-    
+    YAW_OFFSET_RAD = [np.radians(offset_data.get('yaw_deg', 0.0))]  # Mutable yaw offset
+
+    offset_step = 0.05  # meters
+    yaw_step = np.radians(1.0)  # 1 degree
+
     print(f"\nLoaded offset from JSON:")
     print(f"→ POSE_OFFSET      : {POSE_OFFSET}")
-    print(f"→ YAW_OFFSET_RAD   : {YAW_OFFSET_RAD:.3f} rad ({np.degrees(YAW_OFFSET_RAD):.1f}°)\n")
+    print(f"→ YAW_OFFSET_RAD   : {YAW_OFFSET_RAD[0]:.3f} rad ({np.degrees(YAW_OFFSET_RAD[0]):.1f}°)\n")
 
     def extract_timestamp_from_filename(filename):
         ts_str = os.path.basename(filename).rsplit('.', 2)
@@ -74,9 +76,9 @@ def vis_dict(directory):
         return frame
 
     def set_initial_camera(view_ctrl):
-        eye = np.array([5.0, 0.0, 5.0])        # Camera position
-        lookat = np.array([5.0, 0.0, 10.0])     # Point to look at (directly below)
-        up = np.array([0.0, 1.0, 0.0])         # Y axis is "up" in the image
+        eye = np.array([5.0, 0.0, 5.0])
+        lookat = np.array([5.0, 0.0, 10.0])
+        up = np.array([0.0, 1.0, 0.0])
 
         front = (lookat - eye)
         front /= np.linalg.norm(front)
@@ -84,13 +86,13 @@ def vis_dict(directory):
         view_ctrl.set_lookat(lookat)
         view_ctrl.set_front(front)
         view_ctrl.set_up(up)
-        view_ctrl.set_zoom(0.5)  # Adjust zoom level if needed
+        view_ctrl.set_zoom(0.5)
 
     vis = o3d.visualization.VisualizerWithKeyCallback()
     vis.create_window()
     idx = 0
 
-    set_initial_camera(vis.get_view_control())  # Set camera view
+    set_initial_camera(vis.get_view_control())
 
     def load_pcd(filepath):
         pcd = o3d.io.read_point_cloud(filepath)
@@ -146,7 +148,7 @@ def vis_dict(directory):
             print(f"→ Pose y                 : {pose_row['y']:.3f}")
             print(f"→ Pose yaw_rad           : {pose_row['yaw_rad']:.3f}")
             print(f"→ POSE_OFFSET            : {POSE_OFFSET}")
-            print(f"→ YAW_OFFSET_RAD         : {YAW_OFFSET_RAD:.3f} rad ({np.degrees(YAW_OFFSET_RAD):.1f}°)")
+            print(f"→ YAW_OFFSET_RAD         : {YAW_OFFSET_RAD[0]:.3f} rad ({np.degrees(YAW_OFFSET_RAD[0]):.1f}°)")
             print("========================\n")
 
             ctr = vis.get_view_control()
@@ -160,11 +162,10 @@ def vis_dict(directory):
                 pose_row['y'],
                 pose_row['yaw_rad'],
                 offset=POSE_OFFSET,
-                yaw_offset=YAW_OFFSET_RAD
+                yaw_offset=YAW_OFFSET_RAD[0]
             )
 
             vis.add_geometry(pcd)
-            #vis.add_geometry(axis)
             for bbox in bbox_objs:
                 vis.add_geometry(bbox)
             vis.add_geometry(robot_frame)
@@ -172,13 +173,52 @@ def vis_dict(directory):
             vis.update_renderer()
             ctr.convert_from_pinhole_camera_parameters(cam_params)
 
+    # Navigation
     def right_click(vis): update_view(vis, idx + 1)
     def left_click(vis): update_view(vis, idx - 1)
     def exit_key(vis): print("Exiting visualization."); vis.destroy_window()
 
-    vis.register_key_callback(262, right_click)
-    vis.register_key_callback(263, left_click)
-    vis.register_key_callback(32, exit_key)
+    # Offset control
+    def inc_x(vis): 
+        POSE_OFFSET[0] += offset_step
+        print(f"→ X offset: {POSE_OFFSET[0]:.3f}")
+        update_view(vis, idx)
+
+    def dec_x(vis): 
+        POSE_OFFSET[0] -= offset_step
+        print(f"→ X offset: {POSE_OFFSET[0]:.3f}")
+        update_view(vis, idx)
+
+    def inc_y(vis): 
+        POSE_OFFSET[1] += offset_step
+        print(f"→ Y offset: {POSE_OFFSET[1]:.3f}")
+        update_view(vis, idx)
+
+    def dec_y(vis): 
+        POSE_OFFSET[1] -= offset_step
+        print(f"→ Y offset: {POSE_OFFSET[1]:.3f}")
+        update_view(vis, idx)
+
+    def inc_yaw(vis): 
+        YAW_OFFSET_RAD[0] += yaw_step
+        print(f"→ Yaw offset: {np.degrees(YAW_OFFSET_RAD[0]):.2f}°")
+        update_view(vis, idx)
+
+    def dec_yaw(vis): 
+        YAW_OFFSET_RAD[0] -= yaw_step
+        print(f"→ Yaw offset: {np.degrees(YAW_OFFSET_RAD[0]):.2f}°")
+        update_view(vis, idx)
+
+    # Register key callbacks
+    vis.register_key_callback(262, right_click)  # →
+    vis.register_key_callback(263, left_click)   # ←
+    vis.register_key_callback(32, exit_key)      # Space
+    vis.register_key_callback(ord('A'), dec_x)
+    vis.register_key_callback(ord('D'), inc_x)
+    vis.register_key_callback(ord('W'), inc_y)
+    vis.register_key_callback(ord('S'), dec_y)
+    vis.register_key_callback(ord('Q'), dec_yaw)
+    vis.register_key_callback(ord('E'), inc_yaw)
 
     update_view(vis, idx)
     vis.run()
