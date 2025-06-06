@@ -124,10 +124,45 @@ def vis_dict(directory):
                                                     size)
         bbox_o3d.color = (1, 0, 0)
         return bbox_o3d
+    
+    def collect_all_data_and_save_csv():
+        print("Collecting participant and robot positions for all frames...")
+        frame_rows = []
+        max_participants = 0
+
+        for frame in all_frame_data:
+            # Extract timestamp from pcd_file (before .pcd) and remove decimal point
+            ts_str = frame["pcd_file"].split('.pcd')[0]
+            ts_int_str = ts_str.replace('.', '')
+            row = {
+                "timestamp": ts_int_str,
+                "robot_x": frame["robot_x"],
+                "robot_y": frame["robot_y"],
+                "robot_yaw_rad": frame["robot_yaw_rad"],
+            }
+            # Add participant coordinates as x1, y1, x2, y2, ...
+            for i, pos in enumerate(frame["participant_positions"]):
+                row[f"x{i+1}"] = pos[0]
+                row[f"y{i+1}"] = pos[1]
+            max_participants = max(max_participants, len(frame["participant_positions"]))
+            frame_rows.append(row)
+
+        # Ensure all rows have the same columns
+        columns = ["timestamp", "robot_x", "robot_y", "robot_yaw_rad"]
+        for i in range(1, max_participants+1):
+            columns += [f"x{i}", f"y{i}"]
+
+        df = pd.DataFrame(frame_rows)
+        df = df.reindex(columns=columns)
+        out_csv = f"{scene_number}_annotated/scene_{scene_number}_participants_and_robot_flat.csv"
+        df.to_csv(out_csv, index=False)
+        print(f"Saved participant and robot positions to {out_csv}")
 
     axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.5, origin=[0, 0, 0])
 
-    def update_view(vis, new_idx):
+    all_frame_data = []  # Collect data for all frames
+
+    def update_view(vis, new_idx, collect_data=False):
         nonlocal idx
         if 0 <= new_idx < len(pcds):
             idx = new_idx
@@ -137,6 +172,26 @@ def vis_dict(directory):
             pose_idx = find_closest_pose_idx(adjusted_ts)
             pose_row = pose_df.iloc[pose_idx]
             pose_ts = pose_row['timestamp_ns']
+
+            if collect_data:
+                # Collect participant positions for this frame
+                participant_positions = []
+                if anns and os.path.exists(anns[idx]):
+                    with open(anns[idx], 'r') as f:
+                        ann_data = json.load(f)
+                    for figure in ann_data.get("figures", []):
+                        if figure.get("geometryType") == "cuboid_3d":
+                            bbox = figure["geometry"]
+                            center = np.array([bbox["position"]["x"], bbox["position"]["y"], bbox["position"]["z"]])
+                            participant_positions.append(center)
+                all_frame_data.append({
+                    "frame_idx": idx,
+                    "pcd_file": os.path.basename(pcd_file),
+                    "robot_x": pose_row['x'],
+                    "robot_y": pose_row['y'],
+                    "robot_yaw_rad": pose_row['yaw_rad'],
+                    "participant_positions": participant_positions
+                })
 
             print("\n=== Frame Debug Info ===")
             print(f"[{idx+1}/{len(pcds)}] File              : {os.path.basename(pcd_file)}")
@@ -184,6 +239,12 @@ def vis_dict(directory):
     vis.register_key_callback(32, exit_key)
 
     update_view(vis, idx)
+    
+    # Collect data for all frames before saving CSV
+    for i in range(len(pcds)):
+        update_view(vis, i, collect_data=True)
+    collect_all_data_and_save_csv()
+
     vis.run()
 
 if __name__ == '__main__':

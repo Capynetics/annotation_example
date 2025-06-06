@@ -7,6 +7,7 @@ import pandas as pd
 import bisect
 
 
+
 scene_number = 13  # Change this to the desired scene number
 
 hsr_scene_numbers = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 27, 28, 29, 30, 31, 32, 34, 35, 36, 38, 39]
@@ -150,7 +151,27 @@ def vis_dict(directory):
             print(f"→ POSE_OFFSET            : {POSE_OFFSET}")
             print(f"→ YAW_OFFSET_RAD         : {YAW_OFFSET_RAD:.3f} rad ({np.degrees(YAW_OFFSET_RAD):.1f}°)")
             print(f"Robot position: x={pose_row['x']:.3f}, y={pose_row['y']:.3f}, yaw={pose_row['yaw_rad']:.3f} rad")
-            print("========================\n")
+            # Print participant positions
+            if anns and os.path.exists(anns[idx]):
+                with open(anns[idx], 'r') as f:
+                    ann_data = json.load(f)
+                print("Participants' positions (x, y):")
+                for figure in ann_data.get("figures", []):
+                    if figure.get("geometryType") == "cuboid_3d":
+                        pos = figure["geometry"]["position"]
+                        print(f"  x={pos['x']:.3f}, y={pos['y']:.3f}")
+
+            # Print robot frame position (with offset and yaw offset)
+            base_x, base_y, base_yaw = pose_row['x'], pose_row['y'], pose_row['yaw_rad']
+            c, s = np.cos(base_yaw), np.sin(base_yaw)
+            offset_rot = [
+                c * POSE_OFFSET[0] - s * POSE_OFFSET[1],
+                s * POSE_OFFSET[0] + c * POSE_OFFSET[1]
+            ]
+            robot_frame_x = base_x + offset_rot[0]
+            robot_frame_y = base_y + offset_rot[1]
+            robot_frame_yaw = base_yaw + YAW_OFFSET_RAD
+
 
             ctr = vis.get_view_control()
             cam_params = ctr.convert_to_pinhole_camera_parameters()
@@ -186,5 +207,93 @@ def vis_dict(directory):
     update_view(vis, idx)
     vis.run()
 
+def save_positions_csv(directory, output_csv):
+    pcds = sorted(glob.glob(f'{directory}/*.pcd'))
+    anns = sorted(glob.glob(f'{directory.replace("pointcloud", "ann")}/*.json'))
+
+    if not pcds:
+        print("No .pcd files found in the directory.")
+        return
+
+    # Load robot pose CSV
+    pose_df = pd.read_csv(f'{scene_number}_annotated/{scene_number}_robot_pose.csv')
+    pose_times = pose_df['timestamp_ns'].values
+
+    # Load spatial and yaw offset from JSON
+    with open(f'{scene_number}_annotated/{scene_number}_grs_to_bot_offset.json', 'r') as f:
+        offset_data = json.load(f)
+
+    POSE_OFFSET = np.array([
+        offset_data.get('x', 0.0),
+        offset_data.get('y', 0.0),
+        offset_data.get('z', 0.0)
+    ])
+    YAW_OFFSET_RAD = np.radians(offset_data.get('yaw_deg', 0.0))
+
+    def extract_timestamp_from_filename(filename):
+        ts_str = os.path.basename(filename).rsplit('.', 2)
+        if len(ts_str) >= 2:
+            full_ts = '.'.join(ts_str[:2])
+            return int(float(full_ts) * 1e9)
+        return None
+
+    def find_closest_pose_idx(ts):
+        i = bisect.bisect_left(pose_times, ts)
+        if i > 0 and (i == len(pose_times) or abs(ts - pose_times[i - 1]) < abs(ts - pose_times[i])):
+            return i - 1
+        return i
+
+    rows = []
+    for idx, pcd_file in enumerate(pcds):
+        ts = extract_timestamp_from_filename(pcd_file)
+        adjusted_ts = ts + TIME_OFFSET_NS
+        pose_idx = find_closest_pose_idx(adjusted_ts)
+        pose_row = pose_df.iloc[pose_idx]
+
+        # Robot frame position (with offset and yaw offset) -- FIXED
+        base_x, base_y, base_yaw = pose_row['x'], pose_row['y'], pose_row['yaw_rad']
+
+        # Build T
+        T = np.eye(4)
+        T[:2, :2] = [[np.cos(base_yaw), -np.sin(base_yaw)],
+                     [np.sin(base_yaw),  np.cos(base_yaw)]]
+        T[:3, 3] = np.array([base_x, base_y, 0.0]) + POSE_OFFSET
+
+        # Build R
+        R = np.eye(4)
+        R[:2, :2] = [[np.cos(YAW_OFFSET_RAD), -np.sin(YAW_OFFSET_RAD)],
+                     [np.sin(YAW_OFFSET_RAD),  np.cos(YAW_OFFSET_RAD)]]
+
+        final_transform = R @ T
+        robot_frame_x = final_transform[0, 3]
+        robot_frame_y = final_transform[1, 3]
+        robot_frame_yaw = np.arctan2(final_transform[1, 0], final_transform[0, 0])
+
+        # Get participant positions
+        part_positions = []
+        if anns and os.path.exists(anns[idx]):
+            with open(anns[idx], 'r') as f:
+                ann_data = json.load(f)
+            for figure in ann_data.get("figures", []):
+                if figure.get("geometryType") == "cuboid_3d":
+                    pos = figure["geometry"]["position"]
+                    part_positions.extend([pos['x'], pos['y']])
+        # Pad to 10 values (for up to 5 participants)
+        while len(part_positions) < 10:
+            part_positions.append('')
+
+        row = [ts, robot_frame_x, robot_frame_y, robot_frame_yaw] + part_positions
+        rows.append(row)
+
+    # Write to CSV
+    header = ['timestamp', 'robot_x', 'robot_y', 'robot_yaw_rad',
+              'x1', 'y1', 'x2', 'y2', 'x3', 'y3', 'x4', 'y4', 'x5', 'y5']
+    df = pd.DataFrame(rows, columns=header)
+    df.to_csv(output_csv, index=False)
+    print(f"Saved positions to {output_csv}")
+
 if __name__ == '__main__':
-    vis_dict(f'{scene_number}_annotated/scene_{scene_number}/pointcloud')
+    # Uncomment to run the CSV export:
+    save_positions_csv(f'{scene_number}_annotated/scene_{scene_number}/pointcloud',
+                       f'{scene_number}_annotated/scene_{scene_number}_positions.csv')
+    # vis_dict(f'{scene_number}_annotated/scene_{scene_number}/pointcloud')
