@@ -195,6 +195,24 @@ def vis_dict(directory):
         print(f"Image pose updated: x={image_pose['x']:.2f}, y={image_pose['y']:.2f}, z={image_pose['z']:.2f}, yaw={np.degrees(image_pose['yaw']):.1f}°")
         update_view(vis, idx)
 
+    def save_occupancy_xy():
+        if occupancy_map is None:
+            print("No occupancy map loaded.")
+            return
+        points = np.asarray(occupancy_map.points)
+        colors = np.asarray(occupancy_map.colors)
+        # Black points: all color channels == 0
+        black_mask = np.all(colors == 0, axis=1)
+        black_points = points[black_mask]
+        xy = black_points[:, :2]
+        data = [{"x": float(x), "y": float(y)} for x, y in xy]
+        with open("occupancy_xy_points.json", "w") as f:
+            json.dump(data, f, indent=2)
+        print(f"Saved {xy.shape[0]} black occupancy grid x,y points to occupancy_xy_points.json")
+
+    def space_key(vis):
+        save_occupancy_xy()
+
     vis.register_key_callback(262, right_click)
     vis.register_key_callback(263, left_click)
     vis.register_key_callback(32, exit_key)
@@ -207,6 +225,8 @@ def vis_dict(directory):
     vis.register_key_callback(ord('E'), lambda vis: adjust_image_pose(dyaw=-np.radians(5)))
     vis.register_key_callback(265, lambda vis: adjust_image_pose(dz=+0.1))
     vis.register_key_callback(264, lambda vis: adjust_image_pose(dz=-0.1))
+
+    vis.register_key_callback(32, space_key)  # Space key now saves points
 
     update_view(vis, idx)
     vis.run()

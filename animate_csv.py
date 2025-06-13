@@ -2,6 +2,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+import json
+import matplotlib
+
+matplotlib.rcParams['animation.ffmpeg_path'] = '/usr/bin/ffmpeg'  # Adjust if your ffmpeg is elsewhere
 
 # Load CSV file
 df = pd.read_csv("/home/jsouzasoar/annotation_example/13_annotated/scene_13_positions.csv")
@@ -18,44 +22,68 @@ for i in range(1, 6):
     y = df[f"y{i}"].values
     object_coords.append((x, y))
 
+# Load occupancy points
+with open("/home/jsouzasoar/annotation_example/occupancy_xy_points.json", "r") as f:
+    occupancy_data = json.load(f)
+
+# Extract occupancy points
+occupancy_x = [point["x"] for point in occupancy_data]
+occupancy_y = [point["y"] for point in occupancy_data]
+
 # Create the figure and axes
 fig, ax = plt.subplots()
-robot_body, = ax.plot([], [], 'bo', label="Robot")
-robot_heading, = ax.plot([], [], 'b-', lw=1)
-objects_plot = [ax.plot([], [], 'rx')[0] for _ in range(5)]
+# Robot as a red triangle (Polygon)
+robot_triangle = plt.Polygon([[0, 0], [0, 0], [0, 0]], closed=True, color='red', label="Robot")
+ax.add_patch(robot_triangle)
+# Participants as blue dots
+objects_plot = [ax.plot([], [], 'bo', markersize=8, label="Participant" if i == 0 else "")[0] for i in range(5)]
+occupancy_plot = ax.plot(occupancy_x, occupancy_y, 'k.', markersize=1, label="Occupancy")[0]
+
+def get_triangle_coords(x, y, yaw, base=0.3, height=0.5):
+    # Returns coordinates for an isosceles triangle centered at (x, y) and oriented by yaw
+    # Triangle points: tip, left base, right base
+    tip = np.array([x + height * np.cos(yaw), y + height * np.sin(yaw)])
+    left = np.array([
+        x + base/2 * np.cos(yaw + np.pi/2),
+        y + base/2 * np.sin(yaw + np.pi/2)
+    ])
+    right = np.array([
+        x + base/2 * np.cos(yaw - np.pi/2),
+        y + base/2 * np.sin(yaw - np.pi/2)
+    ])
+    return np.array([tip, left, right])
 
 def init():
     ax.set_xlim(0, 12)
     ax.set_ylim(-7, 3)
     ax.set_aspect('equal')
-    ax.set_title("Robot and Objects Animation")
-    ax.legend()
-    return [robot_body, robot_heading] + objects_plot
+    ax.set_title("Robot and Participants position over time")
+    ax.set_xlabel("x (meters)")
+    ax.set_ylabel("y (meters)")
+    #ax.legend()
+    # Initialize robot triangle
+    coords = get_triangle_coords(robot_x[0], robot_y[0], robot_yaw[0])
+    robot_triangle.set_xy(coords)
+    # Initialize participants
+    for i, (ox, oy) in enumerate(object_coords):
+        objects_plot[i].set_data([ox[0]], [oy[0]])
+    return [robot_triangle, occupancy_plot] + objects_plot
 
 def update(frame):
     x = robot_x[frame]
     y = robot_y[frame]
     yaw = robot_yaw[frame]
-
-    # Robot position (must be sequences)
-    robot_body.set_data([x], [y])
-
-    # Robot heading line
-    dx = 0.5 * np.cos(yaw)
-    dy = 0.5 * np.sin(yaw)
-    robot_heading.set_data([x, x + dx], [y, y + dy])
-
-    # Object positions (must also be sequences)
+    # Update robot triangle
+    coords = get_triangle_coords(x, y, yaw)
+    robot_triangle.set_xy(coords)
+    # Update participants
     for i, (ox, oy) in enumerate(object_coords):
         objects_plot[i].set_data([ox[frame]], [oy[frame]])
-
-    return [robot_body, robot_heading] + objects_plot
-
+    return [robot_triangle, occupancy_plot] + objects_plot
 
 ani = animation.FuncAnimation(fig, update, frames=len(df), init_func=init, blit=True, interval=50)
 
-# Uncomment to display in a notebook or GUI
-plt.show()
+#plt.show()
 
 # Save to file (optional)
-# ani.save("robot_scene_animation.mp4", writer='ffmpeg', fps=20)
+ani.save("robot_scene_animation.mp4", writer='ffmpeg', fps=20)
