@@ -7,7 +7,7 @@ import matplotlib
 
 matplotlib.rcParams['animation.ffmpeg_path'] = '/usr/bin/ffmpeg'  # Adjust if your ffmpeg is elsewhere
 
-scene = 1
+scene = 52
 # Load CSV file
 df = pd.read_csv(f"/home/jsouzasoar/annotation_example/{scene}_poses/{scene}_robot_and_participants.csv")
 
