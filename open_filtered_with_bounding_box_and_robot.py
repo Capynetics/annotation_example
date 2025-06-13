@@ -10,19 +10,17 @@ import cv2
 scene_number = 25
 
 hsr_scene_numbers = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 27, 28, 29, 30, 31, 32, 34, 35, 36, 38, 39]
+
+# Static transforms for image alignment
+image_pose_hsr = {'x': 1.80, 'y': -16.70, 'z': -2.10, 'yaw': np.radians(4.0)}
+image_pose_jackal = {'x': -0.30, 'y': -16.80, 'z': -2.20, 'yaw': np.radians(-3.0)}
+
+image_pose = image_pose_jackal.copy()  # Use the HSR pose as default
 TIME_OFFSET_NS = 0
 
 if scene_number in hsr_scene_numbers or scene_number in [46, 52]:
     TIME_OFFSET_NS = 15_500_000_000
-
-image_pose_hsr = {
-    'x': 2.0,
-    'y': -16.80,
-    'z': -2.20,
-    'yaw': 0.0872665
-}
-
-image_pose = image_pose_hsr.copy()  # Use the HSR pose as default
+    image_pose = image_pose_hsr.copy() 
 
 def create_occupancy_grid_mesh(image_path, resolution=0.05, apply_transform=True):
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)

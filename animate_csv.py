@@ -7,8 +7,9 @@ import matplotlib
 
 matplotlib.rcParams['animation.ffmpeg_path'] = '/usr/bin/ffmpeg'  # Adjust if your ffmpeg is elsewhere
 
+scene = 1
 # Load CSV file
-df = pd.read_csv("/home/jsouzasoar/annotation_example/19_poses/19_robot_and_participants.csv")
+df = pd.read_csv(f"/home/jsouzasoar/annotation_example/{scene}_poses/{scene}_robot_and_participants.csv")
 
 # Extract robot data
 robot_x = df["robot_x"].values
@@ -23,7 +24,7 @@ for i in range(1, 6):
     object_coords.append((x, y))
 
 # Load occupancy points
-with open("/home/jsouzasoar/annotation_example/occupancy_xy_points.json", "r") as f:
+with open(f"/home/jsouzasoar/annotation_example/{scene}_poses/{scene}_occupancy_xy_points.json", "r") as f:
     occupancy_data = json.load(f)
 
 # Extract occupancy points
