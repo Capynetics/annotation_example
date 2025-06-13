@@ -83,7 +83,7 @@ def update(frame):
 
 ani = animation.FuncAnimation(fig, update, frames=len(df), init_func=init, blit=True, interval=50)
 
-#plt.show()
+plt.show()
 
 # Save to file (optional)
-ani.save("robot_scene_animation.mp4", writer='ffmpeg', fps=20)
+#ani.save("robot_scene_animation.mp4", writer='ffmpeg', fps=20)

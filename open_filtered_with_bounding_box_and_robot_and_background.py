@@ -7,7 +7,7 @@ import pandas as pd
 import bisect
 import cv2
 
-scene_number = 13
+scene_number = 1
 
 hsr_scene_numbers = [1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 13, 27, 28, 29, 30, 31, 32, 34, 35, 36, 38, 39]
 TIME_OFFSET_NS = 0
@@ -16,14 +16,14 @@ if scene_number in hsr_scene_numbers or scene_number in [46, 52]:
     TIME_OFFSET_NS = 15_500_000_000
 
 image_pose = {
-    'x': 0.0,
-    'y': 0.0,
-    'z': 0.0,
-    'yaw': 0.0
+    'x': 2.0,
+    'y': -16.80,
+    'z': -2.20,
+    'yaw': 0.0872665
 }
 
 
-def create_occupancy_grid_mesh(image_path, resolution=0.05):
+def create_occupancy_grid_mesh(image_path, resolution=0.05, apply_transform=True):
     img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     if img is None:
         print(f"⚠️ Failed to load image from {image_path}")
@@ -47,12 +47,13 @@ def create_occupancy_grid_mesh(image_path, resolution=0.05):
     pcd.points = o3d.utility.Vector3dVector(points)
     pcd.colors = o3d.utility.Vector3dVector(colors)
 
-    transform = np.eye(4)
-    cos_yaw = np.cos(image_pose['yaw'])
-    sin_yaw = np.sin(image_pose['yaw'])
-    transform[:2, :2] = [[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]]
-    transform[:3, 3] = [image_pose['x'], image_pose['y'], image_pose['z']]
-    pcd.transform(transform)
+    if apply_transform:
+        transform = np.eye(4)
+        cos_yaw = np.cos(image_pose['yaw'])
+        sin_yaw = np.sin(image_pose['yaw'])
+        transform[:2, :2] = [[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]]
+        transform[:3, 3] = [image_pose['x'], image_pose['y'], image_pose['z']]
+        pcd.transform(transform)
 
     return pcd
 
@@ -79,6 +80,9 @@ def vis_dict(directory):
         offset_data.get('z', 0.0)
     ])
     YAW_OFFSET_RAD = np.radians(offset_data.get('yaw_deg', 0.0))
+
+    occupancy_image_path = "static_obstacle_map_cropped.png"
+    raw_occupancy_map = create_occupancy_grid_mesh(occupancy_image_path, resolution=0.05, apply_transform=False)
 
     def extract_timestamp_from_filename(filename):
         ts_str = os.path.basename(filename).rsplit('.', 2)
@@ -112,6 +116,7 @@ def vis_dict(directory):
     vis.create_window()
     idx = 0
     occupancy_map = None
+    current_pcd = None
 
     def load_pcd(filepath):
         pcd = o3d.io.read_point_cloud(filepath)
@@ -145,7 +150,7 @@ def vis_dict(directory):
         return bbox_o3d
 
     def update_view(vis, new_idx):
-        nonlocal idx, occupancy_map
+        nonlocal idx, occupancy_map, current_pcd
         if 0 <= new_idx < len(pcds):
             idx = new_idx
             pcd_file = pcds[idx]
@@ -162,7 +167,7 @@ def vis_dict(directory):
             cam_params = ctr.convert_to_pinhole_camera_parameters()
             vis.clear_geometries()
 
-            pcd = load_pcd(pcd_file)
+            current_pcd = load_pcd(pcd_file)
             bbox_objs = load_annotations(anns[idx]) if anns else []
             robot_frame = create_robot_frame(
                 pose_row['x'],
@@ -172,11 +177,16 @@ def vis_dict(directory):
                 yaw_offset=YAW_OFFSET_RAD
             )
 
-            occupancy_map = create_occupancy_grid_mesh("static_obstacle_map_cropped.png", resolution=0.05)
+            occupancy_map = o3d.geometry.PointCloud(raw_occupancy_map)  # copy
+            transform = np.eye(4)
+            cos_yaw = np.cos(image_pose['yaw'])
+            sin_yaw = np.sin(image_pose['yaw'])
+            transform[:2, :2] = [[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]]
+            transform[:3, 3] = [image_pose['x'], image_pose['y'], image_pose['z']]
+            occupancy_map.transform(transform)
 
-            vis.add_geometry(pcd)
-            if occupancy_map:
-                vis.add_geometry(occupancy_map)
+            vis.add_geometry(current_pcd)
+            vis.add_geometry(occupancy_map)
             for bbox in bbox_objs:
                 vis.add_geometry(bbox)
             vis.add_geometry(robot_frame)
@@ -201,7 +211,6 @@ def vis_dict(directory):
             return
         points = np.asarray(occupancy_map.points)
         colors = np.asarray(occupancy_map.colors)
-        # Black points: all color channels == 0
         black_mask = np.all(colors == 0, axis=1)
         black_points = points[black_mask]
         xy = black_points[:, :2]
@@ -210,8 +219,13 @@ def vis_dict(directory):
             json.dump(data, f, indent=2)
         print(f"Saved {xy.shape[0]} black occupancy grid x,y points to occupancy_xy_points.json")
 
-    def space_key(vis):
-        save_occupancy_xy()
+    def save_current_pcd():
+        if current_pcd is None:
+            print("⚠️ No point cloud loaded.")
+            return
+        filename = f"saved_pointcloud_{idx:04d}.pcd"
+        o3d.io.write_point_cloud(filename, current_pcd)
+        print(f"✅ Saved current point cloud to {filename}")
 
     vis.register_key_callback(262, right_click)
     vis.register_key_callback(263, left_click)
@@ -226,10 +240,12 @@ def vis_dict(directory):
     vis.register_key_callback(265, lambda vis: adjust_image_pose(dz=+0.1))
     vis.register_key_callback(264, lambda vis: adjust_image_pose(dz=-0.1))
 
-    vis.register_key_callback(32, space_key)  # Space key now saves points
+    vis.register_key_callback(ord('P'), lambda vis: save_current_pcd())
+    vis.register_key_callback(ord('O'), lambda vis: save_occupancy_xy())
 
     update_view(vis, idx)
     vis.run()
+
 
 if __name__ == '__main__':
     vis_dict(f'{scene_number}_annotated/scene_{scene_number}/pointcloud')
