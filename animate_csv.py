@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.rcParams['animation.ffmpeg_path'] = '/usr/bin/ffmpeg'  # Adjust if your ffmpeg is elsewhere
 
 # Load CSV file
-df = pd.read_csv("/home/jsouzasoar/annotation_example/13_annotated/scene_13_positions.csv")
+df = pd.read_csv("/home/jsouzasoar/annotation_example/19_poses/19_robot_and_participants.csv")
 
 # Extract robot data
 robot_x = df["robot_x"].values
